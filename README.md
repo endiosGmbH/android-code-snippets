@@ -1,2 +1,2 @@
 # Hello there, fellow developer
-Her you find Android code snippets and more
+Here you find Android code snippets and more
