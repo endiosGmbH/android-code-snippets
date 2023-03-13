@@ -1,18 +1,20 @@
 package de.endios.endiosone.oneWidgetConsumption.css.ui.consumption
 
-internal class ConsumptionOverviewViewModel(private val app: Application) :
-    StatefulViewModel<String>(app) {
+internal class ConsumptionOverviewViewModel(
+    app: Application,
+    private val consumptionRepository: ConsumptionRepository
+) : StatefulViewModel<String>(app) {
 
     fun updateConsumption(items: List<ConsumptionBodyItem>) {
         viewModelScope.launch {
-            val result = consentRepository.updateConsent(items)
+            val result = consumptionRepository.getConsumption(items)
             var obisDataNightConsumptionInt = 0
             var obisDataDayConsumptionInt = 0
 
             result?.obisDataNight?.previousYear?.consumptionInt.takeIf {
                 it.toString().isNotEmpty()
             }?.let { value ->
-                value
+                obisDataNightConsumptionInt = value
             }
 
             result?.obisDataDay?.previousYear?.consumptionInt.takeIf { it.toString().isNotEmpty() }
