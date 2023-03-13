@@ -7,7 +7,7 @@ internal class ConsumptionOverviewViewModel(
 
     fun updateConsumption(items: List<ConsumptionBodyItem>) {
         viewModelScope.launch {
-            val result = consumptionRepository.getConsumption(items)
+            val result = consumptionRepository.updateConsumption(items)
             var obisDataNightConsumptionInt = 0
             var obisDataDayConsumptionInt = 0
 
