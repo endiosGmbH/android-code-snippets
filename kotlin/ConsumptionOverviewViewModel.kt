@@ -13,7 +13,7 @@ internal class ConsumptionOverviewViewModel(private val app: Application) :
                 it.toString().isNotEmpty()
             }?.let { value ->
                 value
-            } ?: 0
+            }
 
             result?.obisDataDay?.previousYear?.consumptionInt.takeIf { it.toString().isNotEmpty() }
                 ?.let { value ->
