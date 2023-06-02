@@ -20,6 +20,7 @@ internal class DashboardFragment : Fragment(R.layout.fragment_epc_dashboard) {
         sessionViewModel.cssConfigValues?.dashboardConfigsValues
     }
 
+    // Too much logic in the fragment. Should be moved to the ViewModel.
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -39,15 +40,22 @@ internal class DashboardFragment : Fragment(R.layout.fragment_epc_dashboard) {
 
             fragmentCssEpcTariffName.text = sessionViewModel.selectedContract?.type
             fragmentCssEpcContractNumber.text = sessionViewModel.selectedContract?.label
+            // Nested string formatting. Better use `getString(R.string.meter_last_reading_date, sessionViewModel.selectedMeter?.latestReadingDateFormatted)`
             fragmentCssEpcMeterLastReadingDate.text =
                 "${getString(R.string.meter_last_reading_date)} ${sessionViewModel.selectedMeter?.latestReadingDateFormatted}"
 
+            // Getting a string but not doing anything with it doesn't make sense
             getString(
                 R.string.meter_last_reading_date,
                 sessionViewModel.selectedMeter?.latestReadingDateFormatted
             )
 
             barGraphicEpcPrognosePercent.apply {
+                // Copy pasted code here can be simplified with extension function:
+                // fun String?.toColor(): Int = this?.takeIf { it.isNotEmpty() }?.let { parseColor(this) } ?: Color.TRANSPARENT
+                // firstBarColor = dashboardConfigsValues?.currentConsumptionLegendColor.toColor()
+                // secondBarColor = dashboardConfigsValues?.projectedConsumptionLegendColor.toColor()
+                // indicatorTrianglePaintColor = dashboardConfigsValues?.subsidizedConsumptionLegendColor.toColor()
                 dashboardConfigsValues?.currentConsumptionLegendColor.takeIf {
                     it.toString().isNotEmpty()
                 }?.let { color ->
@@ -64,6 +72,7 @@ internal class DashboardFragment : Fragment(R.layout.fragment_epc_dashboard) {
                     indicatorTrianglePaintColor = Color.parseColor(color)
                 }
 
+                // No need to assign new values since all are taken from the same object sessionViewModel.selectedMeter?.obisDataList?.get(0)?.priceCapOverview
                 val subsidizedConsumptionLimit =
                     sessionViewModel.selectedMeter?.obisDataList?.get(0)?.priceCapOverview?.subsidizedConsumptionLimit
                 val currentConsumption =
@@ -73,6 +82,12 @@ internal class DashboardFragment : Fragment(R.layout.fragment_epc_dashboard) {
                 val baselineConsumption =
                     sessionViewModel.selectedMeter?.obisDataList?.get(0)?.priceCapOverview?.baselineConsumption
 
+                // We can simply use `apply` to get the values directly from the object:
+                // sessionViewModel.selectedMeter?.obisDataList?.firstOrNull()?.priceCapOverview?.apply {
+                //     firstBarValue = calculateValue(currentConsumption, baselineConsumption)
+                //     middleBarValue = calculateValue(predictedConsumption, baselineConsumption)
+                //     indicatorValue = calculateValue(subsidizedConsumptionLimit, baselineConsumption)
+                // }
                 firstBarValue = calculateValue(currentConsumption, baselineConsumption)
                 middleBarValue = calculateValue(predictedConsumption, baselineConsumption)
                 indicatorValue = calculateValue(subsidizedConsumptionLimit, baselineConsumption)
@@ -80,6 +95,9 @@ internal class DashboardFragment : Fragment(R.layout.fragment_epc_dashboard) {
         }
     }
 
+    // Very non-specific function naming. Calculate value of what?
+    // Can be simplified like so:
+    // fun Float?.calculatePercentage(divider: Float?): Float = divider?.let { (this ?: 0f) / it } ?: 0f
     private fun calculateValue(value: Float?, baselineConsumption: Float?): Float {
         var calculateValue = 0f
         if (value != null && baselineConsumption != null) {
